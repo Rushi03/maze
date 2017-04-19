@@ -8,9 +8,11 @@ class Robot(object):
         provided based on common information, including the size of the maze
         the robot is placed in.
         '''
-
+        # Starting location; bottom right corner
         self.location = [0, 0]
+        # Starts heading up
         self.heading = 'up'
+        # Dimensions of the maze
         self.maze_dim = maze_dim
 
     def next_move(self, sensors):
@@ -35,7 +37,17 @@ class Robot(object):
         the tester to end the run and return the robot to the start.
         '''
 
-        rotation = 0
-        movement = 0
+        # Rotates counterclockwise 90 degrees(-90), no degrees(0),
+        # clockwise 90 degrees (90)
+        rotation = 0  # [-90, 0 , 90]
+        # Can move up 3 steps per turn; max 3 forward (3)
+        # and max 3 backwards (-3)
+        movement = 0  # [-3, 3]
 
+        if movement > 3:
+            movement = 3
+        else:
+            movement
+
+        # Returns tuple (rotation, movement)
         return rotation, movement
