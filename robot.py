@@ -16,6 +16,10 @@ class Robot(object):
         self.maze_dim = maze_dim
         # Goal
         self.goal = [self.maze_dim / 2, self.maze_dim / 2 + 1]
+        # X location
+        self.x = self.location[0]
+        # Y location
+        self.y = self.location[1]
 
     def next_move(self, sensors):
         '''
@@ -48,16 +52,25 @@ class Robot(object):
 
         view = list(sensors)  # make a copy to preserve original [L, F, R]
 
-        rotation = 'Reset'
-        movement = 'Reset'
+        if view[2] == max(view):
+            rotation = 90
+            movement = 1
+        elif view[0] == max(view):
+            rotation = -90
+            movement = 1
+        else:
+            rotation = 0
+            movement = 1
 
-        if movement > 3:
-            movement = 3
-        if movement < -3:
-            movement = -3
+        if self.location[0] in goal and self.location[1] in goal:
+            rotation = 'Reset'
+            movement = 'Reset'
 
-        rotation = 90
-        rotation = -90
+        Z = []
+        dx = self.goal[0] - self.x
+        dy = self.goal[1] - self.y
+        Z.append([dx, dy])
+
 
         # Returns tuple (rotation, movement)
         return rotation, movement
