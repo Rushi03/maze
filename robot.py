@@ -14,6 +14,8 @@ class Robot(object):
         self.heading = 'up'
         # Dimensions of the maze
         self.maze_dim = maze_dim
+        # Goal
+        self.goal = [self.maze_dim / 2, self.maze_dim / 2 + 1]
 
     def next_move(self, sensors):
         '''
@@ -44,10 +46,18 @@ class Robot(object):
         # and max 3 backwards (-3)
         movement = 0  # [-3, 3]
 
+        view = list(sensors)  # make a copy to preserve original [L, F, R]
+
+        rotation = 'Reset'
+        movement = 'Reset'
+
         if movement > 3:
             movement = 3
-        else:
-            movement
+        if movement < -3:
+            movement = -3
+
+        rotation = 90
+        rotation = -90
 
         # Returns tuple (rotation, movement)
         return rotation, movement
