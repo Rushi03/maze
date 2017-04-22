@@ -20,6 +20,23 @@ class Robot(object):
         self.x = self.location[0]
         # Y location
         self.y = self.location[1]
+        # Location index
+        self.index = 0
+
+    def distance(self):
+        '''
+        Use this function to check the distance from the goal. It will index
+        each location the robot has covered.
+        '''
+
+        Z = []
+        # Distance from the goal
+        dx = self.goal[0] - self.x
+        dy = self.goal[1] - self.y
+        Z.append([self.index, dx, dy])
+        self.index += 1
+
+        return Z
 
     def next_move(self, sensors):
         '''
@@ -66,10 +83,6 @@ class Robot(object):
             rotation = 'Reset'
             movement = 'Reset'
 
-        Z = []
-        dx = self.goal[0] - self.x
-        dy = self.goal[1] - self.y
-        Z.append([dx, dy])
 
 
         # Returns tuple (rotation, movement)
