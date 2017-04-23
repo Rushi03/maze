@@ -20,8 +20,6 @@ class Robot(object):
         self.x = self.location[0]
         # Y location
         self.y = self.location[1]
-        # Location index
-        self.index = 0
 
     def distance(self):
         '''
@@ -29,14 +27,99 @@ class Robot(object):
         each location the robot has covered.
         '''
 
-        Z = []
+        # Chart for the maze
+        Z = [[0 for row in range(self.maze_dim)] for col in
+             range(self.maze_dim)]
         # Distance from the goal
-        dx = self.goal[0] - self.x
-        dy = self.goal[1] - self.y
-        Z.append([self.index, dx, dy])
-        self.index += 1
+        dx = abs(self.goal[0] - self.x)
+        dy = abs(self.goal[1] - self.y)
+        # Distance from location
+        Z[self.x][self.y] = dx + dy
 
         return Z
+
+    def a_star(self):
+        '''
+        Define the A* search method to fin the optimal path from start to
+        goal. Find the heuristic for the maze first in order implement the A*
+        method.
+        '''
+
+        # Create heuristic chart for maze
+        self.heuristic = [[0 for row in range(self.maze_dim)] for col in
+                          range(self.maze_dim)]
+        for i in range(self.maze_dim):
+            for j in range(self.maze_dim):
+                dX = abs(self.goal[0] - i)
+                dY = abs(self.goal[1] - j)
+                heuristic[i][j] = dX + dY
+
+        # Raise an error if heuristic is blank
+        if heuristic == []:
+            raise ValueError('No heuristic to implement A*')
+
+        # Direction moves for the robot
+        delta = [[0, 1],   # Move up
+                 [1, 0],   # Move right
+                 [0, -1],  # Move down
+                 [-1, 0]]  # Move left
+
+        # Check the locations the robot has visited
+        checked = [[0 for row in range(self.maze_dim)] for col in
+                   range(self.maze_dim)]
+        # Number of which move was made
+        move = [[0 for row in range(self.maze_dim)] for col in
+                range(self.maze_dim)]
+
+        # Origin location checked
+        checked[self.x][self.y] = 1
+
+        x = self.x
+        y = self.y
+        h = heuristic[x][y]
+        g = 0
+        f = g + h
+
+        open = [[f, g, h, x, y]]
+
+        reached = False  # Seatch completed
+        quit = False     # Can't expand upon elements in list
+        count = 0
+        self.cost = 1    # Cost of moving
+
+        while not reached and not quit:
+            # Check if elements in open list
+            if len(open) == 0:
+                quit = True
+                print 'Unsucessful Search'
+            else:
+                # Remove node from the list
+                open.sort()
+                open.reverse()
+                next = open.pop()
+                x = next[3]
+                y = next[4]
+                g = next[1]
+
+            # Check if we reached goal
+            if x == goal[0] and y == goal[1]:
+                reached = True
+            else:
+                # Expand element and add to open list
+                for i in range(len(delta)):
+                    x_prime = x + delta[i][0]
+                    y_prime = y + delta[i][1]
+                    if x_prime >= 0 and x_prime < self.maze_dim and \
+                       y_prime >= 0 and y_prime < self.maze_dim:
+                        if checked[x_prime][y_prime] == 0:
+                            g_prime = g + cost
+                            h_prime = self.heuristic[x_prime][y_prime]
+                            f_prime = g_prime + h_prime
+                            open.append([f_prime, g_prime, h_prime, x_prime,
+                                         y_prime])
+                            checked[x_prime][y_prime] = 1
+                            move[x_prime][y_prime] = i
+            count += 1
 
     def next_move(self, sensors):
         '''
@@ -67,6 +150,8 @@ class Robot(object):
         # and max 3 backwards (-3)
         movement = 0  # [-3, 3]
 
+        cost = [8, 1, 2]  # cost for left, forward, right
+
         view = list(sensors)  # make a copy to preserve original [L, F, R]
 
         if view[2] == max(view):
@@ -79,11 +164,29 @@ class Robot(object):
             rotation = 0
             movement = 1
 
-        if self.location[0] in goal and self.location[1] in goal:
+        # Wall on front and right
+        if view[0] > 0 and view[1] == 0 and view[2] == 0:
+            rotation = -90
+            movement = 1
+
+        # Wall on both sides
+        if view[0] == 0 and view[1] > 0 and view[2] == 0:
+            rotation = 0
+            movement = 1
+
+        # Wall on left and front
+        if view[0] == 0 and view[1] == 0 and view[2] > 0:
+            rotation = 90
+            movement = 1
+
+        # Deadend
+        if view == [0, 0, 0]:
+            rotation = 0
+            movement = -1
+
+        if self.location[0] in self.goal and self.location[1] in self.goal:
             rotation = 'Reset'
             movement = 'Reset'
-
-
 
         # Returns tuple (rotation, movement)
         return rotation, movement
