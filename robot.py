@@ -1,4 +1,6 @@
 import numpy as np
+import random
+from q_learning import QLearning
 
 class Robot(object):
     def __init__(self, maze_dim):
@@ -17,26 +19,9 @@ class Robot(object):
         # Goal
         self.goal = [self.maze_dim / 2, self.maze_dim / 2 + 1]
         # X location
-        self.x = self.location[0]
+        self.x = 0
         # Y location
-        self.y = self.location[1]
-
-    def distance(self):
-        '''
-        Use this function to check the distance from the goal. It will index
-        each location the robot has covered.
-        '''
-
-        # Chart for the maze
-        Z = [[0 for row in range(self.maze_dim)] for col in
-             range(self.maze_dim)]
-        # Distance from the goal
-        dx = abs(self.goal[0] - self.x)
-        dy = abs(self.goal[1] - self.y)
-        # Distance from location
-        Z[self.x][self.y] = dx + dy
-
-        return Z
+        self.y = 0
 
     def a_star(self):
         '''
@@ -45,13 +30,13 @@ class Robot(object):
         method.
         '''
 
-        # Create heuristic chart for maze
-        self.heuristic = [[0 for row in range(self.maze_dim)] for col in
-                          range(self.maze_dim)]
+        heuristic = [[0 for row in range(self.maze_dim)] for col in
+                     range(self.maze_dim)]
+
         for i in range(self.maze_dim):
             for j in range(self.maze_dim):
-                dX = abs(self.goal[0] - i)
-                dY = abs(self.goal[1] - j)
+                dX = abs(i - self.goal[0])
+                dY = abs(j - self.goal[1])
                 heuristic[i][j] = dX + dY
 
         # Raise an error if heuristic is blank
@@ -63,6 +48,9 @@ class Robot(object):
                  [1, 0],   # Move right
                  [0, -1],  # Move down
                  [-1, 0]]  # Move left
+
+        # Direction signs
+        delta_sign = ['^', '>', 'v', '<']
 
         # Check the locations the robot has visited
         checked = [[0 for row in range(self.maze_dim)] for col in
@@ -102,8 +90,9 @@ class Robot(object):
                 g = next[1]
 
             # Check if we reached goal
-            if x == goal[0] and y == goal[1]:
+            if x == self.goal[0] and y == self.goal[1]:
                 reached = True
+                print 'Successful Search'
             else:
                 # Expand element and add to open list
                 for i in range(len(delta)):
@@ -112,14 +101,30 @@ class Robot(object):
                     if x_prime >= 0 and x_prime < self.maze_dim and \
                        y_prime >= 0 and y_prime < self.maze_dim:
                         if checked[x_prime][y_prime] == 0:
-                            g_prime = g + cost
-                            h_prime = self.heuristic[x_prime][y_prime]
+                            g_prime = g + self.cost
+                            h_prime = heuristic[x_prime][y_prime]
                             f_prime = g_prime + h_prime
                             open.append([f_prime, g_prime, h_prime, x_prime,
                                          y_prime])
                             checked[x_prime][y_prime] = 1
                             move[x_prime][y_prime] = i
             count += 1
+
+        policy = [[' ' for row in range(self.maze_dim)] for col in
+                  range(self.maze_dim)]
+        x = self.goal[0]
+        y = self.goal[1]
+        policy[x][y] = 'x'
+
+        while x != self.x and y != self.y:
+            x_prime = x - delta[move[x][y]][0]
+            y_prime = y - delta[move[x][y]][1]
+            policy[x_prime][y_prime] = delta_sign[move[x][y]]
+            x = x_prime
+            y = y_prime
+
+        for i in range(len(policy)):
+            print policy[i]
 
     def next_move(self, sensors):
         '''
@@ -150,43 +155,42 @@ class Robot(object):
         # and max 3 backwards (-3)
         movement = 0  # [-3, 3]
 
-        cost = [8, 1, 2]  # cost for left, forward, right
+        actions = ['up', 'right', 'down', 'left']
 
         view = list(sensors)  # make a copy to preserve original [L, F, R]
 
-        if view[2] == max(view):
+        q_learn = QLearning()
+        state = q_learn.build_state(view)
+        q_learn.create_Q(state)
+        action = q_learn.choose_action(state)
+
+        # Up
+        if action == actions[0]:
+            rotation = 0
+            movement = random.randint(1, 3)
+        # Right
+        elif action == actions[1]:
             rotation = 90
-            movement = 1
-        elif view[0] == max(view):
+            movement = random.randint(1, 3)
+        # Down
+        elif action == actions[2]:
+            rotation = 0
+            movement = random.randint(-3, -1)
+        # Left
+        elif action == actions[3]:
             rotation = -90
-            movement = 1
+            movement = random.randint(1, 3)
         else:
             rotation = 0
-            movement = 1
-
-        # Wall on front and right
-        if view[0] > 0 and view[1] == 0 and view[2] == 0:
-            rotation = -90
-            movement = 1
-
-        # Wall on both sides
-        if view[0] == 0 and view[1] > 0 and view[2] == 0:
-            rotation = 0
-            movement = 1
-
-        # Wall on left and front
-        if view[0] == 0 and view[1] == 0 and view[2] > 0:
-            rotation = 90
-            movement = 1
-
-        # Deadend
-        if view == [0, 0, 0]:
-            rotation = 0
-            movement = -1
+            movement = 0
 
         if self.location[0] in self.goal and self.location[1] in self.goal:
             rotation = 'Reset'
             movement = 'Reset'
+
+        reward = q_learn.act(action)
+        q_learn.learn(state, action, reward)
+        q_learn.update(view)
 
         # Returns tuple (rotation, movement)
         return rotation, movement
