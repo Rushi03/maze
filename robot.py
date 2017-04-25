@@ -2,6 +2,7 @@ import numpy as np
 import random
 from q_learning import QLearning
 
+
 class Robot(object):
     def __init__(self, maze_dim):
         '''
@@ -11,13 +12,13 @@ class Robot(object):
         the robot is placed in.
         '''
         # Starting location; bottom right corner
-        self.location = [0, 0]
+        self.location = [0, 11]
         # Starts heading up
         self.heading = 'up'
         # Dimensions of the maze
         self.maze_dim = maze_dim
-        # Goal
-        self.goal = [self.maze_dim / 2, self.maze_dim / 2 + 1]
+        # Goal(square)
+        self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
         # X location
         self.x = 0
         # Y location
@@ -59,7 +60,7 @@ class Robot(object):
         move = [[0 for row in range(self.maze_dim)] for col in
                 range(self.maze_dim)]
 
-        # Origin location checked
+        # Starting location checked
         checked[self.x][self.y] = 1
 
         x = self.x
@@ -70,10 +71,14 @@ class Robot(object):
 
         open = [[f, g, h, x, y]]
 
-        reached = False  # Seatch completed
-        quit = False     # Can't expand upon elements in list
+        # Search completed
+        reached = False
+        # Can't expand upon elements in list
+        quit = False
+        # Counter
         count = 0
-        self.cost = 1    # Cost of moving
+        # Cost of moving
+        self.cost = 1
 
         while not reached and not quit:
             # Check if elements in open list
@@ -150,47 +155,74 @@ class Robot(object):
 
         # Rotates counterclockwise 90 degrees(-90), no degrees(0),
         # clockwise 90 degrees (90)
-        rotation = 0  # [-90, 0 , 90]
+        rotation = None  # [-90, 0 , 90]
         # Can move up 3 steps per turn; max 3 forward (3)
         # and max 3 backwards (-3)
-        movement = 0  # [-3, 3]
+        movement = None  # [-3, 3]
 
+        # Actions the robot may be able to take
         actions = ['up', 'right', 'down', 'left']
 
-        view = list(sensors)  # make a copy to preserve original [L, F, R]
+        # Direction moves for the robot
+        delta = [[0, 1],   # Move up
+                 [1, 0],   # Move right
+                 [0, -1],  # Move down
+                 [-1, 0]]  # Move left
 
-        q_learn = QLearning()
+        # Make a copy to preserve original [L, F, R]
+        view = list(sensors)
+
+        # Implement Q-Learning
+        q_learn = QLearning(self.location, self.maze_dim)
+        # Build state through sesnsor information
         state = q_learn.build_state(view)
+        # Create state in Q-table if not already there
         q_learn.create_Q(state)
+        # Take action according to state
         action = q_learn.choose_action(state)
 
-        # Up
-        if action == actions[0]:
-            rotation = 0
-            movement = random.randint(1, 3)
-        # Right
-        elif action == actions[1]:
-            rotation = 90
-            movement = random.randint(1, 3)
-        # Down
-        elif action == actions[2]:
-            rotation = 0
-            movement = random.randint(-3, -1)
-        # Left
-        elif action == actions[3]:
-            rotation = -90
-            movement = random.randint(1, 3)
-        else:
-            rotation = 0
-            movement = 0
-
+        # Reset when robot reaches the goal
         if self.location[0] in self.goal and self.location[1] in self.goal:
             rotation = 'Reset'
             movement = 'Reset'
+            self.location[0] = 0
+            self.location[1] = 0
+        else:
+            # Up
+            if action == actions[0]:
+                rotation = 0
+                movement = 1
+                self.location[0] += delta[0][0]
+                self.location[1] += delta[0][1]
+            # Right
+            elif action == actions[1]:
+                rotation = 90
+                movement = 1
+                self.location[0] += delta[1][0]
+                self.location[1] += delta[1][1]
+            # Down
+            elif action == actions[2]:
+                rotation = 0
+                movement = -1
+                self.location[0] += delta[2][0]
+                self.location[1] += delta[2][1]
+            # Left
+            elif action == actions[3]:
+                rotation = -90
+                movement = 1
+                self.location[0] += delta[3][0]
+                self.location[1] += delta[3][1]
+            else:
+                rotation = 0
+                movement = 0
 
-        reward = q_learn.act(action)
+        # Apply reward for each action
+        reward = q_learn.act(state, action)
+        # Learn through the state, action, and reward
         q_learn.learn(state, action, reward)
+        # Update the functions with the current state, action, reward
         q_learn.update(view)
 
+        print self.location
         # Returns tuple (rotation, movement)
         return rotation, movement
