@@ -51,8 +51,6 @@ if __name__ == '__main__':
             # provide robot with sensor information, get actions
             sensing = [testmaze.dist_to_wall(robot_pos['location'], heading)
                        for heading in dir_sensors[robot_pos['heading']]]
-            print robot_pos
-
             rotation, movement = testrobot.next_move(sensing)
 
             # check for a reset
@@ -101,8 +99,8 @@ if __name__ == '__main__':
                     else:
                         print "Movement stopped by wall."
                         movement = 0
-
-            # check for goal entered
+                        
+            # Check for goal entered
             goal_bounds = [testmaze.dim / 2 - 1, testmaze.dim / 2]
             if robot_pos['location'][0] in goal_bounds and robot_pos['location'][1] in goal_bounds:
                 hit_goal = True
@@ -113,4 +111,4 @@ if __name__ == '__main__':
 
     # Report score if robot is successful.
     if len(runtimes) == 2:
-        print "Task complete! Score: {:4.3f}".format(runtimes[1] + train_score_mult*runtimes[0])
+        print "Task complete! Score: {:4.3f}".format(runtimes[1] + train_score_mult * runtimes[0])
