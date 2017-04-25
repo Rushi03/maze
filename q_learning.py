@@ -1,12 +1,16 @@
 import random
 
+
 class QLearning(object):
-    def __init__(self):
-        self.Q = dict()      # Q-table
-        self.epsilon = 0.85  # Exploration factor
-        self.alpha = 0.99    # Learning factor
-        self.actions = ['up', 'right', 'down', 'left']  # Where to move
-        self.discount = 0.05
+    def __init__(self, location, maze_dim):
+        self.Q = dict()        # Q-table
+        self.epsilon = 0.85    # Exploration factor
+        self.alpha = 0.95      # Learning factor
+        self.actions = ['up', 'right', 'down', 'left']  # Available acitons
+        self.discount = 1
+        self.location = location
+        self.maze_dim = maze_dim
+        self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
         self.t = 0
 
     def build_state(self, sense):
@@ -32,7 +36,7 @@ class QLearning(object):
         action = None
 
         # 0 < a < 1
-        a = 0.95
+        a = 0.85
         self.epsilon = pow(a, self.t)
         self.t += 1
 
@@ -49,20 +53,43 @@ class QLearning(object):
             action = random.choice(max_Q_actions)
         return action
 
-    def act(self, action):
+    def act(self, state, action):
         self.action = action
-        reward = 1
+        # Reward starts between -1 and 1; [-1, 1]
+        reward = 2 * random.random() - 1
 
         if self.action == 'up':
-            reward += 50
+            reward += -0.25
         elif self.action == 'right':
-            reward += 30
+            reward += -0.5
         elif self.action == 'down':
-            reward += 0
+            reward += -1.5
         elif self.action == 'left':
-            reward += 15
+            reward += -1.25
         else:
             reward += 0
+
+        counter1 = 0
+        # Prevent moving in a loop in an area
+        if state in self.Q[state]:
+            counter1 += 1
+            if counter1 > 0:
+                reward += counter1 * -1
+            else:
+                reward += -0.25
+
+        counter2 = 0
+        # Prevent moving to deadends
+        if state == (0, 0, 0):
+            counter2 += 1
+            if counter2 > 0:
+                reward += counter2 * -1
+            else:
+                reward += -0.25
+
+        # Reward for reaching the goal
+        if self.location[0] in self.goal and self.location[1] in self.goal:
+            reward += 10
         return reward
 
     def learn(self, state, action, reward):
@@ -76,6 +103,6 @@ class QLearning(object):
         state = self.build_state(sense)     # Get current state
         self.create_Q(state)                # Create 'state' in Q-table
         action = self.choose_action(state)  # Choose an action
-        reward = self.act(action)           # Receive a reward
+        reward = self.act(state, action)    # Receive a reward
         self.learn(state, action, reward)   # Q-learn
         return
