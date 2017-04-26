@@ -1,6 +1,8 @@
 import numpy as np
 import random
 from q_learning import QLearning
+from maze import Maze
+import sys
 
 
 class Robot(object):
@@ -19,6 +21,8 @@ class Robot(object):
         self.maze_dim = maze_dim
         # Goal(square) for robot
         self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
+        # Import maze environment for rewards
+        self.maze = Maze(str(sys.argv[1]))
 
     def next_move(self, sensors):
         '''
@@ -41,8 +45,6 @@ class Robot(object):
         the maze) then returing the tuple ('Reset', 'Reset') will indicate to
         the tester to end the run and return the robot to the start.
         '''
-        rotation = 0
-        movement = 0
         # Direction moves for the robot
         delta = [[0, 1],   # Move up
                  [1, 0],   # Move right
@@ -68,38 +70,36 @@ class Robot(object):
             self.location[0] = 0
             self.location[1] = 0
         else:
-            if self.location[0] >= 0 and self.location[0] < self.maze_dim and \
-               self.location[1] >= 0 and self.location[1] < self.maze_dim:
-                # Up
-                if action == 'up':
-                    rotation = 0
-                    movement = 1
-                    self.location[0] += delta[0][0]
-                    self.location[1] += delta[0][1]
-                # Right
-                elif action == 'right':
-                    rotation = 90
-                    movement = 1
-                    self.location[0] += delta[1][0]
-                    self.location[1] += delta[1][1]
-                # Down
-                elif action == 'down':
-                    rotation = 0
-                    movement = -1
-                    self.location[0] += delta[2][0]
-                    self.location[1] += delta[2][1]
-                # Left
-                elif action == 'left':
-                    rotation = -90
-                    movement = 1
-                    self.location[0] += delta[3][0]
-                    self.location[1] += delta[3][1]
-                else:
-                    rotation = 0
-                    movement = 0
-        
+            # Up
+            if action == 'up':
+                rotation = 0
+                movement = 1
+                self.location[0] += delta[0][0]
+                self.location[1] += delta[0][1]
+            # Right
+            elif action == 'right':
+                rotation = 90
+                movement = 1
+                self.location[0] += delta[1][0]
+                self.location[1] += delta[1][1]
+            # Down
+            elif action == 'down':
+                rotation = 0
+                movement = -1
+                self.location[0] += delta[2][0]
+                self.location[1] += delta[2][1]
+            # Left
+            elif action == 'left':
+                rotation = -90
+                movement = 1
+                self.location[0] += delta[3][0]
+                self.location[1] += delta[3][1]
+            else:
+                rotation = 0
+                movement = 0
+
         # Apply reward for each action
-        reward = q_learn.act(state, action)
+        reward = self.maze.act(action)
         # Learn through the state, action, and reward
         q_learn.learn(state, action, reward)
         # Update the functions with the current state, action, reward
