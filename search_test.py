@@ -3,6 +3,9 @@ from robot import Robot
 import random
 import sys
 
+# Global dictionary for moving and planning
+dir_sensors = {'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
+               'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
 
 if __name__ == '__main__':
 
@@ -23,9 +26,6 @@ if __name__ == '__main__':
 
     ##################################################################
     # Incorporate these into A* search
-
-    dir_sensors = {'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
-                   'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
 
     # Sense the distance from the walls
     sensing = [testmaze.dist_to_wall([x_prime][y_prime], heading)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         # Check if elements in open list
         if len(open) == 0:
             quit = True
-            print 'Unsucessful Search'
+            print 'Unsucessful Search!'
         else:
             # Remove node from the list
             open.sort()
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         # Check if we reached goal
         if x == goal[0] and y == goal[1]:
             reached = True
-            print 'Successful Search'
+            print 'Successful Search!'
         else:
             # Expand element and add to open list
             for i in range(len(delta)):
@@ -116,7 +116,12 @@ if __name__ == '__main__':
                         open.append([f_prime, g_prime, h_prime, x_prime, y_prime])
                         checked[x_prime][y_prime] = 1
                         move[x_prime][y_prime] = i
-        count += 1
+        if count < 1000:
+            count += 1
+        else:
+            quit = True
+            print "Exceed time limit."
+
 
     policy = [[' ' for row in range(testmaze.dim)] for col in
               range(testmaze.dim)]
