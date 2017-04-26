@@ -1,4 +1,6 @@
 import random
+import sys
+from maze import Maze
 
 
 class QLearning(object):
@@ -8,10 +10,8 @@ class QLearning(object):
         self.alpha = 0.95      # Learning factor
         self.actions = ['up', 'right', 'down', 'left']  # Available acitons
         self.discount = 1
-        self.location = location
-        self.maze_dim = maze_dim
-        self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
         self.t = 0
+        self.maze = Maze(str(sys.argv[1]))
 
     def build_state(self, sense):
         state = (sense[0], sense[1], sense[2])
@@ -53,45 +53,6 @@ class QLearning(object):
             action = random.choice(max_Q_actions)
         return action
 
-    def act(self, state, action):
-        self.action = action
-        # Reward starts between -1 and 1; [-1, 1]
-        reward = 2 * random.random() - 1
-
-        if self.action == 'up':
-            reward += -0.25
-        elif self.action == 'right':
-            reward += -0.5
-        elif self.action == 'down':
-            reward += -1.5
-        elif self.action == 'left':
-            reward += -1.25
-        else:
-            reward += 0
-
-        counter1 = 0
-        # Prevent moving in a loop in an area
-        if state in self.Q[state]:
-            counter1 += 1
-            if counter1 > 0:
-                reward += counter1 * -1
-            else:
-                reward += -0.25
-
-        counter2 = 0
-        # Prevent moving to deadends
-        if state == (0, 0, 0):
-            counter2 += 1
-            if counter2 > 0:
-                reward += counter2 * -1
-            else:
-                reward += -0.25
-
-        # Reward for reaching the goal
-        if self.location[0] in self.goal and self.location[1] in self.goal:
-            reward += 10
-        return reward
-
     def learn(self, state, action, reward):
         max_Q = self.get_maxQ(state)
         old_Qsa = self.Q[state][action]
@@ -100,9 +61,9 @@ class QLearning(object):
         return
 
     def update(self, sense):
-        state = self.build_state(sense)     # Get current state
-        self.create_Q(state)                # Create 'state' in Q-table
-        action = self.choose_action(state)  # Choose an action
-        reward = self.act(state, action)    # Receive a reward
-        self.learn(state, action, reward)   # Q-learn
+        state = self.build_state(sense)       # Get current state
+        self.create_Q(state)                  # Create 'state' in Q-table
+        action = self.choose_action(state)    # Choose an action
+        reward = self.maze.act(action)        # Receive a reward
+        self.learn(state, action, reward)     # Q-learn
         return
