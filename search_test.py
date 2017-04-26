@@ -7,7 +7,7 @@ import sys
 if __name__ == '__main__':
 
     '''
-    Define the A* search method to fin the optimal path from start to
+    Define the A* search method to find the optimal path from start to
     goal. Find the heuristic for the maze first in order implement the A*
     method.
     '''
@@ -20,6 +20,19 @@ if __name__ == '__main__':
     heading = ['up', 'right', 'down', 'left']
     # Inital position
     initial = [0, 11]
+
+    ##################################################################
+    # Incorporate these into A* search
+
+    dir_sensors = {'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
+                   'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
+
+    # Sense the distance from the walls
+    sensing = [testmaze.dist_to_wall([x_prime][y_prime], heading)
+               for heading in directions[heading[i]]]
+
+    testmaze.is_permissible([x_prime][y_prime], heading[i])
+    ##################################################################
 
     # Create heuristic grid for A* search
     heuristic = [[0 for row in range(testmaze.dim)] for col in range(testmaze.dim)]
@@ -126,10 +139,10 @@ if __name__ == '__main__':
     y = goal[1]
     invpath.append([x, y])
     while x != initial[0] or y != initial[1]:
-        x2 = x - delta[move[x][y]][0]
-        y2 = y - delta[move[x][y]][1]
-        x = x2
-        y = y2
+        x_prime = x - delta[move[x][y]][0]
+        y_prime = y - delta[move[x][y]][1]
+        x = x_prime
+        y = y_prime
         invpath.append([x, y])
 
     path = []
