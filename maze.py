@@ -1,4 +1,6 @@
 import numpy as np
+import random
+
 
 class Maze(object):
     def __init__(self, filename):
@@ -55,12 +57,11 @@ class Maze(object):
                     print 'Inconsistent horizontal wall betweeen {} and {}'.format(cell, cell2)
             raise Exception('Consistency errors found in wall specifications!')
 
-
     def is_permissible(self, cell, direction):
         """
         Returns a boolean designating whether or not a cell is passable in the
         given direction. Cell is input as a list. Directions may be
-        input as single letter 'u', 'r', 'd', 'l', or complete words 'up', 
+        input as single letter 'u', 'r', 'd', 'l', or complete words 'up',
         'right', 'down', 'left'.
         """
         dir_int = {'u': 1, 'r': 2, 'd': 4, 'l': 8,
@@ -69,7 +70,6 @@ class Maze(object):
             return (self.walls[tuple(cell)] & dir_int[direction] != 0)
         except:
             print 'Invalid direction provided!'
-
 
     def dist_to_wall(self, cell, direction):
         """
@@ -92,3 +92,26 @@ class Maze(object):
             else:
                 sensing = False
         return distance
+
+    def act(self, action):
+        self.action = action
+        self.goal = (self.dim / 2 - 1, self.dim / 2)
+
+        # Reward starts between -1 and 1; [-1, 1]
+        reward = 2 * random.random() - 1
+
+        if self.action == 'up':
+            reward += -0.25
+        elif self.action == 'right':
+            reward += -0.5
+        elif self.action == 'down':
+            reward += -1.5
+        elif self.action == 'left':
+            reward += -1.25
+        else:
+            reward += 0
+
+        # Reward for reaching the goal
+        #if location[0] in self.goal and location[1] in self.goal:
+        #    reward += 10
+        return reward
