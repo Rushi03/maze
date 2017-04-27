@@ -83,7 +83,7 @@ class Maze(object):
 
         sensing = True
         distance = 0
-        curr_cell = list(cell) # make copy to preserve original
+        curr_cell = list(cell)  # make copy to preserve original
         while sensing:
             if self.is_permissible(curr_cell, direction):
                 distance += 1
@@ -96,22 +96,41 @@ class Maze(object):
     def act(self, action):
         self.action = action
         self.goal = (self.dim / 2 - 1, self.dim / 2)
+        self.location = [0, 11]
+        self.bounds = [0, 2, self.dim]
+        # Direction moves for the robot
+        delta = [[0, 1],   # Move up
+                 [1, 0],   # Move right
+                 [0, -1],  # Move down
+                 [-1, 0]]  # Move left
 
         # Reward starts between -1 and 1; [-1, 1]
         reward = 2 * random.random() - 1
 
         if self.action == 'up':
             reward += -0.25
+            self.location = [(self.bounds[2] - (self.location[0] + delta[0][0])) % (self.bounds[2] - self.bounds[0]),
+                             (self.bounds[2] - (self.location[1] + delta[0][1])) % (self.bounds[2] - self.bounds[0])]
         elif self.action == 'right':
             reward += -0.5
+            self.location = [(self.location[0] + delta[1][0]) % (self.bounds[2] - self.bounds[0]),
+                             (self.location[1] + delta[1][1]) % (self.bounds[2] - self.bounds[0])]
         elif self.action == 'down':
             reward += -1.5
+            self.location = [((self.location[0] + delta[2][0]) + self.bounds[0]) % (self.bounds[2] - self.bounds[0]),
+                             ((self.location[1] + delta[2][1]) + self.bounds[1]) % (self.bounds[2] - self.bounds[0])]
         elif self.action == 'left':
             reward += -1.25
+            self.location = [(self.location[0] + delta[3][0]) % (self.bounds[2] - self.bounds[0]),
+                             (self.location[1] + delta[3][1]) % (self.bounds[2] - self.bounds[0])]
         else:
             reward += 0
+        print action
+        print self.location
 
         # Reward for reaching the goal
-        #if location[0] in self.goal and location[1] in self.goal:
-        #    reward += 10
+        if self.location[0] in self.goal and self.location[1] in self.goal:
+            reward += 10
+            self.location[0] = 0
+            self.location[1] = 0
         return reward
