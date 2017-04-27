@@ -9,9 +9,9 @@ class QLearning(object):
         self.epsilon = 0.85    # Exploration factor
         self.alpha = 0.95      # Learning factor
         self.actions = ['up', 'right', 'down', 'left']  # Available acitons
-        self.discount = 1
+        self.discount = 0
         self.t = 0
-        self.maze = Maze(str(sys.argv[1]))
+        self.maze = Maze( str(sys.argv[1]) )
 
     def build_state(self, sense):
         state = (sense[0], sense[1], sense[2])
@@ -64,6 +64,6 @@ class QLearning(object):
         state = self.build_state(sense)       # Get current state
         self.create_Q(state)                  # Create 'state' in Q-table
         action = self.choose_action(state)    # Choose an action
-        reward = self.maze.act(action)        # Receive a reward
+        reward = self.maze.move(action)        # Receive a reward
         self.learn(state, action, reward)     # Q-learn
         return
