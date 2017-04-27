@@ -93,7 +93,7 @@ class Maze(object):
                 sensing = False
         return distance
 
-    def act(self, action):
+    def move(self, action):
         self.action = action
         self.goal = (self.dim / 2 - 1, self.dim / 2)
         self.location = [0, 11]
@@ -108,25 +108,35 @@ class Maze(object):
         reward = 2 * random.random() - 1
 
         if self.action == 'up':
-            reward += -0.25
-            self.location = [(self.bounds[2] - (self.location[0] + delta[0][0])) % (self.bounds[2] - self.bounds[0]),
-                             (self.bounds[2] - (self.location[1] + delta[0][1])) % (self.bounds[2] - self.bounds[0])]
+            if self.is_permissible(self.location, self.action):
+                self.location = [(self.bounds[2] - (self.location[0] + delta[0][0])) % (self.bounds[2] - self.bounds[0]),
+                                 (self.bounds[2] - (self.location[1] + delta[0][1])) % (self.bounds[2] - self.bounds[0])]
+                reward += -0.25
+            else:
+                self.location = self.location
         elif self.action == 'right':
-            reward += -0.5
-            self.location = [(self.location[0] + delta[1][0]) % (self.bounds[2] - self.bounds[0]),
-                             (self.location[1] + delta[1][1]) % (self.bounds[2] - self.bounds[0])]
+            if self.is_permissible(self.location, self.action):
+                self.location = [(self.location[0] + delta[1][0]) % (self.bounds[2] - self.bounds[0]),
+                                 (self.location[1] + delta[1][1]) % (self.bounds[2] - self.bounds[0])]
+                reward += -0.5
+            else:
+                self.location = self.location
         elif self.action == 'down':
-            reward += -1.5
-            self.location = [((self.location[0] + delta[2][0]) + self.bounds[0]) % (self.bounds[2] - self.bounds[0]),
-                             ((self.location[1] + delta[2][1]) + self.bounds[1]) % (self.bounds[2] - self.bounds[0])]
+            if self.is_permissible(self.location, self.action):
+                self.location = [((self.location[0] + delta[2][0]) + self.bounds[0]) % (self.bounds[2] - self.bounds[0]),
+                                 ((self.location[1] + delta[2][1]) + self.bounds[1]) % (self.bounds[2] - self.bounds[0])]
+                reward += -1.5
+            else:
+                self.location = self.location
         elif self.action == 'left':
-            reward += -1.25
-            self.location = [(self.location[0] + delta[3][0]) % (self.bounds[2] - self.bounds[0]),
-                             (self.location[1] + delta[3][1]) % (self.bounds[2] - self.bounds[0])]
+            if self.is_permissible(self.location, self.action):
+                self.location = [(self.location[0] + delta[3][0]) % (self.bounds[2] - self.bounds[0]),
+                                 (self.location[1] + delta[3][1]) % (self.bounds[2] - self.bounds[0])]
+                reward += -1.25
+            else:
+                self.location = self.location
         else:
             reward += 0
-        print action
-        print self.location
 
         # Reward for reaching the goal
         if self.location[0] in self.goal and self.location[1] in self.goal:
