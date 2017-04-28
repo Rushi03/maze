@@ -23,14 +23,6 @@ class Robot(object):
         self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
         # Import maze environment for rewards
         self.maze = Maze( str(sys.argv[1]) )
-        # Sensor direction according to rotation
-        self.dir_sensors = {'u': ['l', 'u', 'r'], 'r': ['u', 'r', 'd'],
-                            'd': ['r', 'd', 'l'], 'l': ['d', 'l', 'u'],
-                            'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
-                            'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
-        # Going in reverse direction
-        self.dir_reverse = {'u': 'd', 'r': 'l', 'd': 'u', 'l': 'r',
-                            'up': 'd', 'right': 'l', 'down': 'u', 'left': 'r'}
 
     def next_move(self, sensors):
         '''
@@ -57,11 +49,9 @@ class Robot(object):
         view = list(sensors)
 
         # Implement Q-Learning
-        q_learn = QLearning(self.location, self.maze_dim)
+        q_learn = QLearning(self.location)
         # Build state through sesnsor information
         state = q_learn.build_state(view)
-        # Create state in Q-table if not already there
-        q_learn.create_Q(state)
         # Take action according to state
         action = q_learn.choose_action(state)
 
@@ -71,7 +61,7 @@ class Robot(object):
             movement = 'Reset'
         else:
             # Up
-            if action == 'up':
+            if action == 'forward':
                 rotation = 0
                 movement = 1
             # Right
@@ -79,7 +69,7 @@ class Robot(object):
                 rotation = 90
                 movement = 1
             # Down
-            elif action == 'down':
+            elif action == 'backwards':
                 rotation = 0
                 movement = -1
             # Left
@@ -90,10 +80,6 @@ class Robot(object):
                 rotation = 0
                 movement = 0
 
-        # Apply reward for each action
-        reward = self.maze.move(action)
-        # Learn through the state, action, and reward
-        q_learn.learn(state, action, reward)
         # Update the functions with the current state, action, reward
         q_learn.update(view)
 
