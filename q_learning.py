@@ -4,14 +4,16 @@ from maze import Maze
 
 
 class QLearning(object):
-    def __init__(self, location, maze_dim):
+    def __init__(self, location):
         self.Q = dict()        # Q-table
         self.epsilon = 0.85    # Exploration factor
         self.alpha = 0.95      # Learning factor
-        self.actions = ['up', 'right', 'down', 'left']  # Available acitons
-        self.discount = 0
+        self.actions = ['forward', 'right', 'backwards', 'left']  # Available acitons
+        self.discount = 1
         self.t = 0
         self.maze = Maze( str(sys.argv[1]) )
+        self.location = location
+
 
     def build_state(self, sense):
         state = (sense[0], sense[1], sense[2])
@@ -61,9 +63,9 @@ class QLearning(object):
         return
 
     def update(self, sense):
-        state = self.build_state(sense)       # Get current state
-        self.create_Q(state)                  # Create 'state' in Q-table
-        action = self.choose_action(state)    # Choose an action
-        reward = self.maze.move(action)        # Receive a reward
-        self.learn(state, action, reward)     # Q-learn
+        state = self.build_state(sense)                  # Get current state
+        self.create_Q(state)                             # Create 'state' in Q-table
+        action = self.choose_action(state)               # Choose an action
+        reward = self.maze.move(self.location, action)   # Receive a reward
+        self.learn(state, action, reward)                # Q-learn
         return
