@@ -14,7 +14,7 @@ class Robot(object):
         the robot is placed in.
         '''
         # Starting location; bottom right corner
-        self.location = [0, 11]
+        self.location = [0, maze_dim - 1]
         # Starts heading up
         self.heading = 'up'
         # Dimensions of the maze
@@ -22,7 +22,7 @@ class Robot(object):
         # Goal(square) for robot
         self.goal = [self.maze_dim / 2 - 1, self.maze_dim / 2]
         # Import maze environment for rewards
-        self.maze = Maze( str(sys.argv[1]) )
+        self.maze = Maze(str(sys.argv[1]))
 
     def next_move(self, sensors):
         '''
@@ -36,8 +36,8 @@ class Robot(object):
         90-degree rotation clockwise, and -90 for a 90-degree rotation
         counterclockwise. Other values will result in no rotation. The second
         value indicates robot movement, and the robot will attempt to move the
-        number of indicated squares: a positive number indicates forwards
-        movement, while a negative number indicates backwards movement. The
+        number of indicated squares: a positive number indicates ups
+        movement, while a negative number indicates down movement. The
         robot may move a maximum of three units per turn. Any excess movement
         is ignored.
 
@@ -49,9 +49,11 @@ class Robot(object):
         view = list(sensors)
 
         # Implement Q-Learning
-        q_learn = QLearning(self.location)
+        q_learn = QLearning()
         # Build state through sesnsor information
         state = q_learn.build_state(view)
+        # Create state in Q-table if is not already there
+        q_learn.create_Q(state)
         # Take action according to state
         action = q_learn.choose_action(state)
 
@@ -61,7 +63,7 @@ class Robot(object):
             movement = 'Reset'
         else:
             # Up
-            if action == 'forward':
+            if action == 'up':
                 rotation = 0
                 movement = 1
             # Right
@@ -69,7 +71,7 @@ class Robot(object):
                 rotation = 90
                 movement = 1
             # Down
-            elif action == 'backwards':
+            elif action == 'down':
                 rotation = 0
                 movement = -1
             # Left
@@ -80,8 +82,10 @@ class Robot(object):
                 rotation = 0
                 movement = 0
 
-        # Update the functions with the current state, action, reward
-        q_learn.update(view)
+        # Gather reward per action taken by the robot
+        reward = self.maze.move(self.heading, self.location, action, rotation, movement)
+        # Learn from the state, action, and reward
+        q_learn.learn(state, action, reward)
 
         # Returns tuple (rotation, movement)
         return rotation, movement
