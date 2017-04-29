@@ -1,11 +1,16 @@
-from maze import Maze
 from robot import Robot
+from maze import Maze
 import random
 import sys
 
 # Global dictionary for moving and planning
-dir_sensors = {'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
-               'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
+directions = {'u': ['l', 'u', 'r'], 'r': ['u', 'r', 'd'],
+              'd': ['r', 'd', 'l'], 'l': ['d', 'l', 'u'],
+              'up': ['l', 'u', 'r'], 'right': ['u', 'r', 'd'],
+              'down': ['r', 'd', 'l'], 'left': ['d', 'l', 'u']}
+
+reverse = {'u': 'd', 'r': 'l', 'd': 'u', 'l': 'r',
+           'up': 'd', 'right': 'l', 'down': 'u', 'left': 'r'}
 
 if __name__ == '__main__':
 
@@ -19,20 +24,12 @@ if __name__ == '__main__':
     testmaze = Maze(str(sys.argv[1]))
     # Goal for robot
     goal = [testmaze.dim / 2 - 1, testmaze.dim / 2]
-    # Robot headings
-    heading = ['up', 'right', 'down', 'left']
+    # Robot actions
+    action = ['up', 'right', 'down', 'left']
+    # Robot heading
+    testrobot = Robot(testmaze.dim)
     # Inital position
-    initial = [0, 11]
-
-    ##################################################################
-    # Incorporate these into A* search
-
-    # Sense the distance from the walls
-    sensing = [testmaze.dist_to_wall([x_prime][y_prime], heading)
-               for heading in directions[heading[i]]]
-
-    testmaze.is_permissible([x_prime][y_prime], heading[i])
-    ##################################################################
+    initial = testrobot.location
 
     # Create heuristic grid for A* search
     heuristic = [[0 for row in range(testmaze.dim)] for col in range(testmaze.dim)]
@@ -101,28 +98,61 @@ if __name__ == '__main__':
         # Check if we reached goal
         if x == goal[0] and y == goal[1]:
             reached = True
+            testrobot.heading = 'up'
+            testrobot.location = [0, testmaze.dim - 1]
+            print 'Steps: {}'.format(count)
             print 'Successful Search!'
         else:
             # Expand element and add to open list
             for i in range(len(delta)):
                 x_prime = x + delta[i][0]
                 y_prime = y + delta[i][1]
-                if x_prime >= 0 and x_prime < testmaze.dim and y_prime >= 0 and \
-                   y_prime < testmaze.dim:
-                    if checked[x_prime][y_prime] == 0:
-                        g_prime = g + cost
-                        h_prime = heuristic[x_prime][y_prime]
-                        f_prime = g_prime + h_prime
-                        open.append([f_prime, g_prime, h_prime, x_prime, y_prime])
-                        checked[x_prime][y_prime] = 1
-                        move[x_prime][y_prime] = i
+
+                # Action robot is taking
+                # Up
+                if action[i] == 'up':
+                    rotation = 0
+                # Right
+                elif action[i] == 'right':
+                    rotation = 90
+                # Down
+                elif action[i] == 'down':
+                    rotation = 180
+                # Left
+                elif action[i] == 'left':
+                    rotation = -90
+                else:
+                    rotation = 180
+
+                # Rotation of robot heading
+                if rotation == -90:
+                    testrobot.heading = directions[testrobot.heading][0]
+                elif rotation == 90:
+                    testrobot.heading = directions[testrobot.heading][2]
+                elif rotation == 0:
+                    pass
+                else:
+                    testrobot.heading = reverse[testrobot.heading]
+
+                # Check if robot can move in that direction and if it hasn't been there
+                if testmaze.is_permissible([x_prime, y_prime], testrobot.heading):
+                    if x_prime >= 0 and x_prime < testmaze.dim and y_prime >= 0 and \
+                       y_prime < testmaze.dim:
+                        if checked[x_prime][y_prime] == 0:
+                            g_prime = g + cost
+                            h_prime = heuristic[x_prime][y_prime]
+                            f_prime = g_prime + h_prime
+                            open.append([f_prime, g_prime, h_prime, x_prime, y_prime])
+                            checked[x_prime][y_prime] = 1
+                            move[x_prime][y_prime] = i
+
         if count < 1000:
             count += 1
         else:
             quit = True
-            print "Exceed time limit."
+            print "Exceeded time limit."
 
-
+    # Display the path that was taken
     policy = [[' ' for row in range(testmaze.dim)] for col in
               range(testmaze.dim)]
     x = goal[0]
@@ -139,10 +169,12 @@ if __name__ == '__main__':
     for i in range(len(policy)):
         print policy[i]
 
+    # Display the x, y of the path taken
     invpath = []
     x = goal[0]
     y = goal[1]
     invpath.append([x, y])
+
     while x != initial[0] or y != initial[1]:
         x_prime = x - delta[move[x][y]][0]
         y_prime = y - delta[move[x][y]][1]
@@ -153,3 +185,4 @@ if __name__ == '__main__':
     path = []
     for i in range(len(invpath)):
         path.append(invpath[len(invpath) - 1 - i])
+    print path
