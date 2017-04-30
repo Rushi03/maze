@@ -2,6 +2,7 @@ from maze import Maze
 from robot import Robot
 import sys
 
+
 # Global dictionaries for robot movement and sensing
 dir_sensors = {'u': ['l', 'u', 'r'], 'r': ['u', 'r', 'd'],
                'd': ['r', 'd', 'l'], 'l': ['d', 'l', 'u'],
@@ -35,8 +36,8 @@ if __name__ == '__main__':
         print "Starting run {}.".format(run)
 
         # Set the robot in the start position. Note that robot position
-        # parameters are independent of the robot itself.
-        robot_pos = {'location': [0, testmaze.dim - 1], 'heading': 'up'}
+        # parameters are dependent on the robot.
+        robot_pos = {'location': testrobot.location, 'heading': testrobot.heading}
 
         run_active = True
         hit_goal = False
@@ -99,7 +100,7 @@ if __name__ == '__main__':
                     else:
                         print "Movement stopped by wall."
                         movement = 0
-
+            print robot_pos['location']
             # Check for goal entered
             goal_bounds = [testmaze.dim / 2 - 1, testmaze.dim / 2]
             if robot_pos['location'][0] in goal_bounds and robot_pos['location'][1] in goal_bounds:
