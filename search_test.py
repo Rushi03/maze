@@ -1,4 +1,3 @@
-from robot import Robot
 from maze import Maze
 import random
 import sys
@@ -27,9 +26,9 @@ if __name__ == '__main__':
     # Robot actions
     action = ['up', 'right', 'down', 'left']
     # Robot heading
-    testrobot = Robot(testmaze.dim)
+    heading = 'up'
     # Inital position
-    initial = testrobot.location
+    initial = [0, testmaze.dim - 1]
 
     # Create heuristic grid for A* search
     heuristic = [[0 for row in range(testmaze.dim)] for col in range(testmaze.dim)]
@@ -46,9 +45,9 @@ if __name__ == '__main__':
         raise ValueError('No heuristic to implement A*')
 
     # Direction moves for the robot
-    delta = [[0, 1],   # Move up
+    delta = [[0, -1],   # Move up
              [1, 0],   # Move right
-             [0, -1],  # Move down
+             [0, 1],  # Move down
              [-1, 0]]  # Move left
 
     # Direction signs
@@ -98,8 +97,6 @@ if __name__ == '__main__':
         # Check if we reached goal
         if x == goal[0] and y == goal[1]:
             reached = True
-            testrobot.heading = 'up'
-            testrobot.location = [0, testmaze.dim - 1]
             print 'Steps: {}'.format(count)
             print 'Successful Search!'
         else:
@@ -111,33 +108,35 @@ if __name__ == '__main__':
                 # Action robot is taking
                 # Up
                 if action[i] == 'up':
-                    rotation = 0
+                    pass
                 # Right
                 elif action[i] == 'right':
-                    rotation = 90
+                    heading = directions[heading][2]
                 # Down
                 elif action[i] == 'down':
-                    rotation = 180
+                    pass
                 # Left
                 elif action[i] == 'left':
-                    rotation = -90
+                    heading = directions[heading][0]
                 else:
-                    rotation = 180
+                    print "Invalid rotation."
 
-                # Rotation of robot heading
+                '''# Rotation of robot heading
                 if rotation == -90:
-                    testrobot.heading = directions[testrobot.heading][0]
+                    heading = directions[heading][0]
                 elif rotation == 90:
-                    testrobot.heading = directions[testrobot.heading][2]
+                    heading = directions[heading][2]
                 elif rotation == 0:
                     pass
+                elif rotation == 180:
+                    heading = reverse[heading]
                 else:
-                    testrobot.heading = reverse[testrobot.heading]
+                    print "Invalid rotation."'''
 
                 # Check if robot can move in that direction and if it hasn't been there
-                if testmaze.is_permissible([x_prime, y_prime], testrobot.heading):
-                    if x_prime >= 0 and x_prime < testmaze.dim and y_prime >= 0 and \
-                       y_prime < testmaze.dim:
+                if x_prime >= 0 and x_prime < testmaze.dim and y_prime >= 0 and \
+                   y_prime < testmaze.dim:
+                    if testmaze.is_permissible([x_prime, y_prime], heading):
                         if checked[x_prime][y_prime] == 0:
                             g_prime = g + cost
                             h_prime = heuristic[x_prime][y_prime]
@@ -145,7 +144,6 @@ if __name__ == '__main__':
                             open.append([f_prime, g_prime, h_prime, x_prime, y_prime])
                             checked[x_prime][y_prime] = 1
                             move[x_prime][y_prime] = i
-
         if count < 1000:
             count += 1
         else:
