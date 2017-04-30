@@ -1,20 +1,19 @@
 import random
 import sys
-from maze import Maze
+
 
 
 class QLearning(object):
     def __init__(self):
         self.Q = dict()        # Q-table
-        self.epsilon = 0.85    # Exploration factor
-        self.alpha = 0.95      # Learning factor
+        self.epsilon = 0.95    # Exploration factor
+        self.alpha = 1        # Learning factor
         self.actions = ['up', 'right', 'down', 'left']  # Available acitons
-        self.discount = 1
+        self.discount = 0
         self.t = 0
-        self.maze = Maze(str(sys.argv[1]))
 
     def build_state(self, sense):
-        state = (sense[0], sense[1], sense[2])
+        state = (sense)
         return state
 
     def get_maxQ(self, state):
