@@ -45,45 +45,48 @@ class Robot(object):
         the maze) then returing the tuple ('Reset', 'Reset') will indicate to
         the tester to end the run and return the robot to the start.
         '''
-        # Make a copy to preserve original [L, F, R]
-        view = list(sensors)
+        position = tuple(self.location)
+        sensor = tuple(sensors)
 
         # Implement Q-Learning
         q_learn = QLearning()
         # Build state through sesnsor information
-        state = q_learn.build_state(view)
+        state = q_learn.build_state(sensor)
         # Create state in Q-table if is not already there
         q_learn.create_Q(state)
         # Take action according to state
         action = q_learn.choose_action(state)
 
-        # Reset when robot reaches the goal
         if self.location[0] in self.goal and self.location[1] in self.goal:
             rotation = 'Reset'
             movement = 'Reset'
+            if (rotation, movement) == ('Reset', 'Reset'):
+                self.location = [0, self.maze_dim - 1]
+                self.heading = 'up'
         else:
             # Up
             if action == 'up':
                 rotation = 0
                 movement = 1
-            # Right
+                # Right
             elif action == 'right':
                 rotation = 90
                 movement = 1
-            # Down
+                # Down
             elif action == 'down':
                 rotation = 0
                 movement = -1
-            # Left
+                # Left
             elif action == 'left':
                 rotation = -90
                 movement = 1
             else:
-                rotation = 0
-                movement = 0
+                rotation = 'Reset'
+                movement = 'Reset'
+
 
         # Gather reward per action taken by the robot
-        reward = self.maze.move(self.heading, self.location, action, rotation, movement)
+        reward = self.maze.move(action)
         # Learn from the state, action, and reward
         q_learn.learn(state, action, reward)
 
