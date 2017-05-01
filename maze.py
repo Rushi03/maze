@@ -57,12 +57,12 @@ class Maze(object):
             raise Exception("Consistency errors found in wall specifications!")
 
     def is_permissible(self, cell, direction):
-        """
+        '''
         Returns a boolean designating whether or not a cell is passable in the
         given direction. Cell is input as a list. Directions may be
         input as single letter 'u', 'r', 'd', 'l', or complete words 'up',
         'right', 'down', 'left'.
-        """
+        '''
         dir_int = {'u': 1, 'r': 2, 'd': 4, 'l': 8,
                    'up': 1, 'right': 2, 'down': 4, 'left': 8}
         try:
@@ -71,12 +71,12 @@ class Maze(object):
             print "Invalid direction provided!"
 
     def dist_to_wall(self, cell, direction):
-        """
+        '''
         Returns a number designating the number of open cells to the nearest
         wall in the indicated direction. Cell is input as a list. Directions
         may be input as a single letter 'u', 'r', 'd', 'l', or complete words
         'up', 'right', 'down', 'left'.
-        """
+        '''
         dir_move = {'u': [0, 1], 'r': [1, 0], 'd': [0, -1], 'l': [-1, 0],
                     'up': [0, 1], 'right': [1, 0], 'down': [0, -1], 'left': [-1, 0]}
 
@@ -92,21 +92,58 @@ class Maze(object):
                 sensing = False
         return distance
 
-    def move(self, action):
-        self.goal = [self.dim / 2 - 1, self.dim / 2]
+    def heuristic(self, goal, location):
+        '''
+        Using the Manhattan distance to determine how far the
+        robot is relevent to it's location.
+        '''
+        self.dx = abs(location[0] - goal[0])
+        self.dy = abs(location[1] - goal[1])
+        return self.dx + self.dy
 
-        # self.reward starts between -1 and 1; [-1, 1]
-        self.reward = 2 * random.random() - 1
+    def move(self, goal, location, action):
+        '''
+        Returns the reward per action taken by the robot. Each action has a different
+        reward due having prefence actions have higher values than less preferred actions.
+        '''
+        self.reward = 0.0
 
-        if action == 'up':
-            self.reward += -0.25
-        elif action == 'right':
-            self.reward += -0.25
-        elif action == 'down':
-            self.reward += -0.1
-        elif action == 'left':
-            self.reward += -0.15
+        distance = self.heuristic(goal, location)
+        previous = 0
+        history = []
+
+        if location[0] in goal and location[1] in goal:
+            self.reward += 10
         else:
-            self.reward += 1
+            if distance < previous and distance not in history:
+                self.reward += 0.25
+                previous = distance
+                history.append(distance)
+            elif distance == previous or distance in history or distance == previous and distance \
+                in history:
+                    self.reward += -0.25
+                    previous = distance
+                    history.append(distance)
+            elif distance > previous or distance in history or distance > previous and distance in \
+                history:
+                    self.reward += -0.25
+                    previous = distance
+                    history.append(distance)
+            else:
+                self.reward += -0.25
+                previous = distance
+                history.append(distance)
+
+        print previous
+        '''if action == 'up':
+            self.reward += 0.25
+        elif action == 'right':
+            self.reward += 0.25
+        elif action == 'down':
+            self.reward += 0.25
+        elif action == 'left':
+            self.reward += 0.25
+        else:
+            self.reward += -0.25'''
 
         return self.reward
