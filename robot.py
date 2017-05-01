@@ -51,7 +51,7 @@ class Robot(object):
         # Implement Q-Learning
         q_learn = QLearning()
         # Build state through sesnsor information
-        state = q_learn.build_state(sensor)
+        state = q_learn.build_state(position, sensor)
         # Create state in Q-table if is not already there
         q_learn.create_Q(state)
         # Take action according to state
@@ -86,7 +86,7 @@ class Robot(object):
 
 
         # Gather reward per action taken by the robot
-        reward = self.maze.move(action)
+        reward = self.maze.move(self.goal, self.location, action)
         # Learn from the state, action, and reward
         q_learn.learn(state, action, reward)
 
