@@ -26,24 +26,10 @@ class Robot(object):
 
     def next_move(self, sensors):
         '''
-        Use this function to determine the next move the robot should make,
+        This function is to determine the next move the robot should make,
         based on the input from the sensors after its previous move. Sensor
         inputs are a list of three distances from the robot's left, front, and
         right-facing sensors, in that order.
-
-        Outputs should be a tuple of two values. The first value indicates
-        robot rotation (if any), as a number: 0 for no rotation, +90 for a
-        90-degree rotation clockwise, and -90 for a 90-degree rotation
-        counterclockwise. Other values will result in no rotation. The second
-        value indicates robot movement, and the robot will attempt to move the
-        number of indicated squares: a positive number indicates ups
-        movement, while a negative number indicates down movement. The
-        robot may move a maximum of three units per turn. Any excess movement
-        is ignored.
-
-        If the robot wants to end a run (e.g. during the first training run in
-        the maze) then returing the tuple ('Reset', 'Reset') will indicate to
-        the tester to end the run and return the robot to the start.
         '''
         position = tuple(self.location)
         sensor = tuple(sensors)
@@ -68,22 +54,21 @@ class Robot(object):
             if action == 'up':
                 rotation = 0
                 movement = 1
-                # Right
+            # Right
             elif action == 'right':
                 rotation = 90
                 movement = 1
-                # Down
+            # Down
             elif action == 'down':
                 rotation = 0
                 movement = -1
-                # Left
+            # Left
             elif action == 'left':
                 rotation = -90
                 movement = 1
             else:
                 rotation = 'Reset'
                 movement = 'Reset'
-
 
         # Gather reward per action taken by the robot
         reward = self.maze.move(self.goal, self.location, action)
