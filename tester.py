@@ -28,6 +28,8 @@ if __name__ == '__main__':
 
     # Intitialize a robot; robot receives info about maze dimensions.
     testrobot = Robot(testmaze.dim)
+    # Steps
+    steps = 0
 
     # Record robot performance over two runs.
     runtimes = []
@@ -100,7 +102,8 @@ if __name__ == '__main__':
                     else:
                         print "Movement stopped by wall."
                         movement = 0
-            print robot_pos['location']
+                if run > 0:
+                    steps += 1
             # Check for goal entered
             goal_bounds = [testmaze.dim / 2 - 1, testmaze.dim / 2]
             if robot_pos['location'][0] in goal_bounds and robot_pos['location'][1] in goal_bounds:
@@ -113,3 +116,4 @@ if __name__ == '__main__':
     # Report score if robot is successful.
     if len(runtimes) == 2:
         print "Task complete! Score: {:4.3f}".format(runtimes[1] + train_score_mult * runtimes[0])
+        print "Steps taken: {}".format(steps)
