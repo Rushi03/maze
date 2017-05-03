@@ -82,7 +82,8 @@ class Maze(object):
 
         sensing = True
         distance = 0
-        curr_cell = list(cell)  # Make copy to preserve original
+        # Make copy to preserve original
+        curr_cell = list(cell)
         while sensing:
             if self.is_permissible(curr_cell, direction):
                 distance += 1
@@ -95,47 +96,56 @@ class Maze(object):
     def heuristic(self, goal, location):
         '''
         Using the Manhattan distance to determine how far the
-        robot is relevent to it's location.
+        robot is relevant to it's location.
         '''
+        # Current x-value from goal
         self.dx = abs(location[0] - goal[0])
+        # Current y-value from goal
         self.dy = abs(location[1] - goal[1])
+        # Total distance of x and y from goal
         return self.dx + self.dy
 
     def move(self, goal, location, action):
         '''
-        Returns the reward per action taken by the robot. Each action has a different
-        reward due having prefence actions have higher values than less preferred actions.
+        Returns the reward per action taken by the robot. Each action has the same
+        reward due having freedom of actions to move freely about the maze. The robot
+        will also be rewarded upon how well it changes it location. If it goes in a loop
+        or a previous  location is visited then it would receive a negative reward.
         '''
+        # Initial reward value
         self.reward = 0.0
 
+        # Manhattan distance from location to goal
         distance = self.heuristic(goal, location)
+        # Previous distance; initialized at 0
         previous = 0
+        # History of previous locations visited in a list
         history = []
 
         if location[0] in goal and location[1] in goal:
             self.reward += 10
         else:
-            if distance < previous and distance not in history:
+            if distance < previous and location not in history:
                 self.reward += 0.25
                 previous = distance
-                history.append(distance)
-            elif distance == previous or distance in history or distance == previous and distance \
+                history.append(location)
+            elif distance == previous or location in history or distance == previous and location \
                 in history:
                     self.reward += -0.25
                     previous = distance
-                    history.append(distance)
+                    history.append(location)
             elif distance > previous or distance in history or distance > previous and distance in \
                 history:
                     self.reward += -0.25
                     previous = distance
-                    history.append(distance)
+                    history.append(location)
             else:
                 self.reward += -0.25
                 previous = distance
-                history.append(distance)
+                history.append(location)
 
-        print previous
-        '''if action == 'up':
+        # Reward for actions taken
+        if action == 'up':
             self.reward += 0.25
         elif action == 'right':
             self.reward += 0.25
@@ -144,6 +154,6 @@ class Maze(object):
         elif action == 'left':
             self.reward += 0.25
         else:
-            self.reward += -0.25'''
+            self.reward += -0.25
 
         return self.reward
