@@ -2,18 +2,17 @@ import random
 import sys
 
 
-
 class QLearning(object):
     def __init__(self):
         self.Q = dict()        # Q-table
-        self.epsilon = 0.95    # Exploration factor
-        self.alpha = 1        # Learning factor
-        self.actions = ['up', 'right', 'down', 'left']  # Available acitons
-        self.discount = 0
-        self.t = 0
+        self.epsilon = 0.85    # Exploration factor
+        self.alpha = 1         # Learning rate
+        self.actions = ['up', 'right', 'down', 'left']  # Available actions
+        self.discount = 0      # Discount Factor
+        self.t = 0             # Time
 
-    def build_state(self, sense):
-        state = (sense)
+    def build_state(self, location, sense):
+        state = (location, sense)
         return state
 
     def get_maxQ(self, state):
@@ -26,7 +25,7 @@ class QLearning(object):
                 # Create new state key, value new dictionary
                 self.Q[state] = {}
                 for action in self.actions:
-                    # Intialize the actions value to 0.0
+                    # Initialize the actions value to 0.0
                     self.Q[state][action] = 0.0
         return
 
@@ -57,6 +56,15 @@ class QLearning(object):
         old_Qsa = self.Q[state][action]
         self.Q[state][action] = (old_Qsa * (1 - self.alpha) + self.alpha *
                                  (reward + self.discount * max_Q))
+
+        # 0 < alpha_t < 1
+        # alpha_t = 0.99
+        # self.alpha = pow(alpha_t, self.t)
+        # self.t += 1
+
+        # 0 < gamma_t <= 1
+        # gamma_t = 0.05
+        # self.discount += gamma_t
         return
 
     '''def update(self, sense):
