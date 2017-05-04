@@ -56,15 +56,6 @@ class QLearning(object):
         old_Qsa = self.Q[state][action]
         self.Q[state][action] = (old_Qsa * (1 - self.alpha) + self.alpha *
                                  (reward + self.discount * max_Q))
-
-        # 0 < alpha_t < 1
-        # alpha_t = 0.99
-        # self.alpha = pow(alpha_t, self.t)
-        # self.t += 1
-
-        # 0 < gamma_t <= 1
-        # gamma_t = 0.05
-        # self.discount += gamma_t
         return
 
     '''def update(self, sense):
